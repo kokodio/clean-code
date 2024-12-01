@@ -2,5 +2,7 @@
 
 public enum TokenType
 {
+    Text,
     Italic,
+    Strong 
 }
