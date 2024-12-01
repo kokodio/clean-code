@@ -113,14 +113,14 @@ public class MdTests
     }
     
     [Test]
-    public void Render_ItalicMustHaveNonWhitespaceBeforeClose1()
+    public void Render_ItalicMustHaveNonWhitespaceAfterOpen()
     {
         var result = renderer.Render(@"За подчерками, начинающими выделение, должен следовать непробельный символ. Иначе эти_ подчерки_ не считаются выделением и остаются просто символами подчерка.");
         result.Should().Be("За подчерками, начинающими выделение, должен следовать непробельный символ. Иначе эти_ подчерки_ не считаются выделением и остаются просто символами подчерка.");
     }
     
     [Test]
-    public void Render_ItalicMustHaveNonWhitespaceBeforeClose2()
+    public void Render_ItalicMustHaveNonWhitespaceBeforeClose()
     {
         var result = renderer.Render(@"Подчерки, заканчивающие выделение, должны следовать за непробельным символом. Иначе эти _подчерки _не считаются_ окончанием выделения и остаются просто символами подчерка.");
         result.Should().Be("Подчерки, заканчивающие выделение, должны следовать за непробельным символом. Иначе эти _подчерки <em>не считаются</em> окончанием выделения и остаются просто символами подчерка.");
