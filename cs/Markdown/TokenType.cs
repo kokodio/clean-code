@@ -4,5 +4,7 @@ public enum TokenType
 {
     Text,
     Italic,
-    Strong 
+    Strong,
+    Escape,
+    WhiteSpace
 }

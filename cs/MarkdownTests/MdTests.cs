@@ -16,7 +16,7 @@ public class MdTests
     [SetUp]
     public void Setup()
     {
-        var tokenizer = new KonturMdTokenizer();
+        var tokenizer = new MdTokenizer();
         var converter = new HtmlConverter();
         renderer = new Md(tokenizer, converter);
     }
@@ -29,10 +29,38 @@ public class MdTests
     }
     
     [Test]
+    public void Render_NestedItalicNearStrong()
+    {
+        var result = renderer.Render("___some text___");
+        result.Should().Be("<strong><em>some text</strong></em>");
+    }
+    
+    [Test]
+    public void Render_BeginWithPairlessStrong()
+    {
+        var result = renderer.Render("__Some_");
+        result.Should().Be("_<em>Some</em>");
+    }
+    
+    [Test]
+    public void Render_EndWithPairlessStrong()
+    {
+        var result = renderer.Render("_Some__");
+        result.Should().Be("<em>Some</em>_");
+    }
+
+    [Test]
     public void Render_Italic()
     {
         var result = renderer.Render("Текст, _окруженный с двух сторон_ одинарными символами подчерка");
         result.Should().Be("Текст, <em>окруженный с двух сторон</em> одинарными символами подчерка");
+    }
+    
+    [Test]
+    public void Render_Same_WhenUnderscoresInsideWords()
+    {
+        var result = renderer.Render("Some_Another_Text");
+        result.Should().Be("Some_Another_Text");
     }
     
     [Test]
@@ -47,6 +75,20 @@ public class MdTests
     {
         var result = renderer.Render(@"\_Вот это\_, не должно выделиться");
         result.Should().Be("_Вот это_, не должно выделиться");
+    }
+    
+    [Test]
+    public void Render_FakeEscape()
+    {
+        var result = renderer.Render(@"123\456");
+        result.Should().Be(@"123\456");
+    }
+    
+    [Test]
+    public void Render_EscapeEscape()
+    {
+        var result = renderer.Render(@"\\_some text_");
+        result.Should().Be(@"\<em>some text</em>");
     }
 
     [Test]
@@ -78,26 +120,12 @@ public class MdTests
     }
     
     [Test]
-    public void Render_AtBeginningOfWord()
+    public void Render_UnderscoresInsideWords()
     {
-        var result = renderer.Render("Однако выделять часть слова они могут: и в _нач_але,");
-        result.Should().Be("Однако выделять часть слова они могут: и в <em>нач</em>але,");
+        var result = renderer.Render("Однако выделять часть слова они могут: и в _нач_але, и в сер_еди_не, и в кон_це._");
+        result.Should().Be("Однако выделять часть слова они могут: и в <em>нач_але, и в сер_еди_не, и в кон_це.</em>");
     }
-    
-    [Test]
-    public void Render_InsideWord()
-    {
-        var result = renderer.Render("и в сер_еди_не");
-        result.Should().Be("и в сер<em>еди</em>не");
-    }
-    
-    [Test]
-    public void Render_AtEndOfWord()
-    {
-        var result = renderer.Render("и в кон_це._");
-        result.Should().Be("и в кон<em>це.</em>");
-    }
-    
+
     [Test]
     public void Render_ItalicDifferentWords()
     {
@@ -109,7 +137,7 @@ public class MdTests
     public void Render_Same_NonPaired()
     {
         var result = renderer.Render(@"__Непарные_ символы в рамках одного абзаца не считаются выделением.");
-        result.Should().Be("__Непарные_ символы в рамках одного абзаца не считаются выделением.");
+        result.Should().Be("_<em>Непарные</em> символы в рамках одного абзаца не считаются выделением.");
     }
     
     [Test]
@@ -122,8 +150,8 @@ public class MdTests
     [Test]
     public void Render_ItalicMustHaveNonWhitespaceBeforeClose()
     {
-        var result = renderer.Render(@"Подчерки, заканчивающие выделение, должны следовать за непробельным символом. Иначе эти _подчерки _не считаются_ окончанием выделения и остаются просто символами подчерка.");
-        result.Should().Be("Подчерки, заканчивающие выделение, должны следовать за непробельным символом. Иначе эти _подчерки <em>не считаются</em> окончанием выделения и остаются просто символами подчерка.");
+        var result = renderer.Render(@"Иначе эти _подчерки _не считаются_ окончанием");
+        result.Should().Be("Иначе эти _подчерки <em>не считаются</em> окончанием");
     }
     
     [Test]
@@ -183,7 +211,6 @@ public class MdTests
         }
         
         var firstRun = GetRunTime(() => renderer.Render(markdown.ToString()));;
-        
         markdown.Clear();
         
         for (var i = 0; i < secondRunCount; i++)
@@ -191,6 +218,7 @@ public class MdTests
             markdown.Append("_text_");
             markdown.Append("__text__");
         }
+
         
         var secondRun = GetRunTime(() => renderer.Render(markdown.ToString()));
 

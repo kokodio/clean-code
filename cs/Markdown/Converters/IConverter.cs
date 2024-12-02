@@ -1,6 +1,8 @@
-﻿namespace Markdown.Converters;
+﻿using Markdown.Tokenizers;
+
+namespace Markdown.Converters;
 
 public interface IConverter
 {
-    public string Convert(List<Token> tokens);
+    public string Convert(IEnumerable<Token> tokens);
 }
