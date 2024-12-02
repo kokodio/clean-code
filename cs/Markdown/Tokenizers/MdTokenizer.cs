@@ -37,6 +37,7 @@ public class MdTokenizer : ITokenizer
                 '\\' => HandleEscape(ref index, markdown),
                 '_' => HandleUnderscore(ref index, markdown),
                 ' ' => HandleWhitespace(ref index),
+                var c when char.IsPunctuation(c) => HandlePunctuation(ref index, markdown[index]),
                 _ => HandleText(ref index, markdown[index])
             });
         }
@@ -64,6 +65,16 @@ public class MdTokenizer : ITokenizer
         {
             Type = TokenType.Escape,
             Content = currentChar,
+        };
+    }
+    
+    private Token HandlePunctuation(ref int index, char markdown)
+    {
+        index++;
+        return new Token
+        {
+            Type = TokenType.Punctuation,
+            Content = markdown.ToString(),
         };
     }
 

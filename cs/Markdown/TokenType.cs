@@ -2,6 +2,7 @@
 
 public enum TokenType
 {
+    Punctuation,
     Text,
     Italic,
     Strong,
